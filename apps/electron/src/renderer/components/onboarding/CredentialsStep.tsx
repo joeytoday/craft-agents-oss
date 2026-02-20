@@ -49,9 +49,11 @@ export function CredentialsStep({
   const isClaudeOAuth = apiSetupMethod === 'claude_oauth'
   const isChatGptOAuth = apiSetupMethod === 'chatgpt_oauth'
   const isCopilotOAuth = apiSetupMethod === 'copilot_oauth'
+  const isQwenOAuth = apiSetupMethod === 'qwen_oauth'
   const isAnthropicApiKey = apiSetupMethod === 'anthropic_api_key'
   const isOpenAiApiKey = apiSetupMethod === 'openai_api_key'
-  const isApiKey = isAnthropicApiKey || isOpenAiApiKey
+  const isQwenApiKey = apiSetupMethod === 'qwen_api_key'
+  const isApiKey = isAnthropicApiKey || isOpenAiApiKey || isQwenApiKey
 
   // Copilot device code clipboard handling
   const [copiedCode, setCopiedCode] = useState(false)
@@ -113,6 +115,41 @@ export function CredentialsStep({
             </div>
           )}
         </div>
+      </StepFormLayout>
+    )
+  }
+
+  // --- Qwen OAuth flow (CLI-based) ---
+  if (isQwenOAuth) {
+    return (
+      <StepFormLayout
+        title="Connect Qwen Code"
+        description="Sign in with your qwen.ai account. Qwen CLI will open your browser (free: 1000 requests/day)."
+        actions={
+          <>
+            <BackButton onClick={onBack} disabled={status === 'validating'} />
+            <ContinueButton
+              onClick={() => onStartOAuth?.()}
+              className="gap-2"
+              loading={status === 'validating'}
+              loadingText="Connecting..."
+            >
+              <ExternalLink className="size-4" />
+              Sign in with Qwen
+            </ContinueButton>
+          </>
+        }
+      >
+        {status === 'error' && errorMessage && (
+          <div className="rounded-lg bg-destructive/10 text-destructive text-sm p-3 text-center">
+            {errorMessage}
+          </div>
+        )}
+        {status === 'success' && (
+          <div className="rounded-lg bg-success/10 text-success text-sm p-3 text-center">
+            Connected! Your Qwen account is ready.
+          </div>
+        )}
       </StepFormLayout>
     )
   }
@@ -247,9 +284,11 @@ export function CredentialsStep({
 
   // --- API Key flow ---
   // Determine provider type and description based on selected method
-  const providerType = isOpenAiApiKey ? 'openai' : 'anthropic'
+  const providerType = isOpenAiApiKey ? 'openai' : isQwenApiKey ? 'qwen' : 'anthropic'
   const apiKeyDescription = isOpenAiApiKey
     ? "Enter your OpenAI API key."
+    : isQwenApiKey
+    ? "Enter your Alibaba Cloud API key for Qwen Code."
     : "Enter your API key. Optionally configure a custom endpoint for OpenRouter, Ollama, or compatible APIs."
 
   return (

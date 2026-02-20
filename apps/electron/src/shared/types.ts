@@ -678,6 +678,9 @@ export const IPC_CHANNELS = {
   ONBOARDING_EXCHANGE_CLAUDE_CODE: 'onboarding:exchangeClaudeCode',
   ONBOARDING_HAS_CLAUDE_OAUTH_STATE: 'onboarding:hasClaudeOAuthState',
   ONBOARDING_CLEAR_CLAUDE_OAUTH_STATE: 'onboarding:clearClaudeOAuthState',
+  // Qwen OAuth (CLI-based flow)
+  ONBOARDING_START_QWEN_OAUTH: 'onboarding:startQwenOAuth',
+  ONBOARDING_EXCHANGE_QWEN_OAUTH: 'onboarding:exchangeQwenOAuth',
 
   // LLM Connections (provider configurations)
   LLM_CONNECTION_LIST: 'LLM_Connection:list',

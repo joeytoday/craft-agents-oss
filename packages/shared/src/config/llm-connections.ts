@@ -11,6 +11,7 @@ import {
   type ModelDefinition,
   ANTHROPIC_MODELS,
   OPENAI_MODELS,
+  QWEN_MODELS,
 } from './models';
 
 // ============================================================
@@ -28,6 +29,7 @@ import {
  * - 'bedrock': AWS Bedrock (Claude models via AWS)
  * - 'vertex': Google Vertex AI (Claude models via GCP)
  * - 'copilot': GitHub Copilot (via @github/copilot-sdk)
+ * - 'qwen': Qwen Code (Alibaba Qwen models via qwen-code CLI)
  */
 export type LlmProviderType =
   | 'anthropic'
@@ -36,7 +38,8 @@ export type LlmProviderType =
   | 'openai_compat'
   | 'bedrock'
   | 'vertex'
-  | 'copilot';
+  | 'copilot'
+  | 'qwen';
 
 /**
  * @deprecated Use LlmProviderType instead. Kept for migration compatibility.
@@ -347,6 +350,15 @@ export function isCopilotProvider(providerType: LlmProviderType): boolean {
 }
 
 /**
+ * Check if a provider type uses Qwen Code.
+ * @param providerType - Provider type to check
+ * @returns true if this provider uses Qwen Code
+ */
+export function isQwenProvider(providerType: LlmProviderType): boolean {
+  return providerType === 'qwen';
+}
+
+/**
  * Get the default model list for a provider type from the registry.
  * For *_compat providers, returns empty array - those should use connection.models instead.
  *
@@ -389,6 +401,7 @@ export function getDefaultModelsForConnection(providerType: LlmProviderType): Ar
   ];
   if (providerType === 'openai') return OPENAI_MODELS;
   if (providerType === 'copilot') return []; // Dynamic — fetched via listModels()
+  if (providerType === 'qwen') return QWEN_MODELS;
   if (providerType === 'anthropic_compat') return [
     'anthropic/claude-opus-4.6',
     'anthropic/claude-sonnet-4.5',
@@ -484,6 +497,7 @@ export function isValidProviderAuthCombination(
     bedrock: ['bearer_token', 'iam_credentials', 'environment'],
     vertex: ['oauth', 'service_account_file', 'environment'],
     copilot: ['oauth'],
+    qwen: ['oauth', 'api_key'], // Qwen supports both OAuth (CLI-based) and API key
   };
 
   return validCombinations[providerType]?.includes(authType) ?? false;

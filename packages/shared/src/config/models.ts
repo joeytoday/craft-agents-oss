@@ -17,7 +17,7 @@
 /**
  * Provider identifier for AI backends.
  */
-export type ModelProvider = 'anthropic' | 'openai' | 'copilot';
+export type ModelProvider = 'anthropic' | 'openai' | 'copilot' | 'qwen';
 
 /**
  * Full model definition with capabilities and costs.
@@ -115,6 +115,28 @@ export const MODEL_REGISTRY: ModelDefinition[] = [
   // No hardcoded entries — models are discovered at runtime via client.listModels()
   // and stored on the connection. See fetchAndStoreCopilotModels() in ipc.ts.
   // ----------------------------------------
+
+  // ----------------------------------------
+  // Qwen Code Models
+  // ----------------------------------------
+  {
+    id: 'qwen3-coder-plus',
+    name: 'Qwen3 Coder Plus',
+    shortName: 'Qwen3 Coder',
+    description: 'Alibaba Qwen3 Coder model via Qwen Code',
+    provider: 'qwen',
+    contextWindow: 256_000,
+    supportsThinking: true,
+  },
+  {
+    id: 'qwen3.5-plus',
+    name: 'Qwen3.5 Plus',
+    shortName: 'Qwen3.5',
+    description: 'Alibaba Qwen3.5 Plus model with thinking support',
+    provider: 'qwen',
+    contextWindow: 256_000,
+    supportsThinking: true,
+  },
 ];
 
 // ============================================
@@ -136,6 +158,9 @@ export const OPENAI_MODELS = getModelsByProvider('openai');
 
 /** All GitHub Copilot models */
 export const COPILOT_MODELS = getModelsByProvider('copilot');
+
+/** All Qwen Code models */
+export const QWEN_MODELS = getModelsByProvider('qwen');
 
 /**
  * Legacy compatibility export.
@@ -275,6 +300,14 @@ export function isCodexModel(modelId: string): boolean {
 export function isCopilotModel(modelId: string): boolean {
   const model = getModelById(modelId);
   return model?.provider === 'copilot';
+}
+
+/**
+ * Check if a model ID refers to a Qwen model.
+ */
+export function isQwenModel(modelId: string): boolean {
+  const model = getModelById(modelId);
+  return model?.provider === 'qwen';
 }
 
 /**

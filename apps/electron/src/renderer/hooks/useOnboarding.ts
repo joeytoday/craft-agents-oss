@@ -84,6 +84,8 @@ const BASE_SLUG_FOR_METHOD: Record<ApiSetupMethod, string> = {
   chatgpt_oauth: 'codex',
   openai_api_key: 'codex-api',
   copilot_oauth: 'copilot',
+  qwen_oauth: 'qwen',
+  qwen_api_key: 'qwen-api',
 }
 
 /**
@@ -147,6 +149,19 @@ function apiSetupMethodToConnectionSetup(
       return {
         slug,
         credential: options.credential,
+      }
+    case 'qwen_oauth':
+      return {
+        slug,
+        credential: options.credential,
+      }
+    case 'qwen_api_key':
+      return {
+        slug,
+        credential: options.credential,
+        baseUrl: options.baseUrl,
+        defaultModel: options.connectionDefaultModel,
+        models: options.models,
       }
   }
 }
@@ -453,6 +468,35 @@ export function useOnboarding({
         } finally {
           cleanup()
           setCopilotDeviceCode(undefined)
+        }
+        return
+      }
+
+      // Qwen OAuth (CLI-based flow - spawns qwen CLI which opens browser)
+      if (effectiveMethod === 'qwen_oauth') {
+        const connectionSlug = apiSetupMethodToConnectionSetup(effectiveMethod, {}, editingSlug, existingSlugs).slug
+
+        const result = await window.electronAPI.startQwenOAuth()
+
+        if (result.success) {
+          // Save OAuth tokens to connection
+          await window.electronAPI.exchangeQwenCode(connectionSlug, {
+            accessToken: result.accessToken,
+            refreshToken: result.refreshToken,
+            expiresAt: result.expiresAt,
+          })
+          await handleSaveConfig(undefined)
+          setState(s => ({
+            ...s,
+            credentialStatus: 'success',
+            step: 'complete',
+          }))
+        } else {
+          setState(s => ({
+            ...s,
+            credentialStatus: 'error',
+            errorMessage: result.error || 'Qwen authentication failed',
+          }))
         }
         return
       }

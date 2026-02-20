@@ -426,6 +426,7 @@ function WorkspaceOverrideCard({ workspace, llmConnections, onSettingsChange }: 
                     description: conn.providerType === 'anthropic' ? 'Anthropic' :
                                  conn.providerType === 'openai' ? 'OpenAI' :
                                  conn.providerType === 'copilot' ? 'GitHub Copilot' :
+                                 conn.providerType === 'qwen' ? 'Qwen Code' :
                                  conn.providerType || 'Unknown',
                   })),
                 ]}
@@ -618,6 +619,7 @@ export default function AiSettingsPage() {
     if (connection.authType === 'oauth') {
       const method = connection.providerType === 'openai' ? 'chatgpt_oauth'
                    : connection.providerType === 'copilot' ? 'copilot_oauth'
+                   : connection.providerType === 'qwen' ? 'qwen_oauth'
                    : 'claude_oauth'
       apiSetupOnboarding.handleStartOAuth(method)
     }
@@ -744,6 +746,7 @@ export default function AiSettingsPage() {
                       description: conn.providerType === 'anthropic' ? 'Anthropic API' :
                                    conn.providerType === 'openai' ? 'OpenAI API' :
                                    conn.providerType === 'copilot' ? 'GitHub Copilot' :
+                                   conn.providerType === 'qwen' ? 'Qwen Code' :
                                    conn.providerType === 'openai_compat' ? 'OpenAI Compatible' :
                                    conn.providerType === 'bedrock' ? 'AWS Bedrock' :
                                    conn.providerType === 'vertex' ? 'Google Vertex' :

@@ -111,13 +111,14 @@ describe('createBackend / createAgent', () => {
 });
 
 describe('getAvailableProviders', () => {
-  it('should return anthropic, openai and copilot', () => {
+  it('should return anthropic, openai, copilot and qwen', () => {
     const providers = getAvailableProviders();
 
     expect(providers).toContain('anthropic');
     expect(providers).toContain('openai');
     expect(providers).toContain('copilot');
-    expect(providers).toHaveLength(3);
+    expect(providers).toContain('qwen');
+    expect(providers).toHaveLength(4);
   });
 });
 
@@ -193,6 +194,12 @@ describe('providerTypeToAgentProvider', () => {
 
     it('should map openai_compat to openai', () => {
       expect(providerTypeToAgentProvider('openai_compat')).toBe('openai');
+    });
+  });
+
+  describe('Qwen Code provider', () => {
+    it('should map qwen to qwen', () => {
+      expect(providerTypeToAgentProvider('qwen')).toBe('qwen');
     });
   });
 });
@@ -279,6 +286,20 @@ describe('isValidProviderAuthCombination', () => {
 
     it('should accept environment auth', () => {
       expect(isValidProviderAuthCombination('vertex', 'environment')).toBe(true);
+    });
+  });
+
+  describe('Qwen provider', () => {
+    it('should accept oauth auth', () => {
+      expect(isValidProviderAuthCombination('qwen', 'oauth')).toBe(true);
+    });
+
+    it('should accept api_key auth', () => {
+      expect(isValidProviderAuthCombination('qwen', 'api_key')).toBe(true);
+    });
+
+    it('should reject none auth', () => {
+      expect(isValidProviderAuthCombination('qwen', 'none')).toBe(false);
     });
   });
 });

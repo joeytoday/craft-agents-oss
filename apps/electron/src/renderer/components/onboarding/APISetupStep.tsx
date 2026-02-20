@@ -5,12 +5,13 @@ import { StepFormLayout, BackButton, ContinueButton } from "./primitives"
 import type { LlmAuthType, LlmProviderType } from "@craft-agent/shared/config/llm-connections"
 
 /** Provider segment for the segmented control */
-export type ProviderSegment = 'anthropic' | 'openai' | 'copilot'
+export type ProviderSegment = 'anthropic' | 'openai' | 'copilot' | 'qwen'
 
 const SEGMENT_LABELS: Record<ProviderSegment, string> = {
   anthropic: 'Claude',
   openai: 'Codex',
   copilot: 'GitHub Copilot',
+  qwen: 'Qwen Code',
 }
 
 const BetaBadge = () => (
@@ -23,6 +24,7 @@ const SEGMENT_DESCRIPTIONS: Record<ProviderSegment, React.ReactNode> = {
   anthropic: <>Use Claude Agent SDK as the main agent.<br />Configure with your Claude subscription or API key.</>,
   openai: <>Use Codex CLI as the main agent.<BetaBadge /><br />Configure with your ChatGPT subscription or OpenAI API key.</>,
   copilot: <>Use Copilot Agent as the main agent.<BetaBadge /><br />Configure with your GitHub Copilot subscription.</>,
+  qwen: <>Use Qwen Code CLI as the main agent.<BetaBadge /><br />Sign in with qwen.ai (free: 1000 req/day) or use API key.</>,
 }
 
 /**
@@ -34,6 +36,8 @@ const SEGMENT_DESCRIPTIONS: Record<ProviderSegment, React.ReactNode> = {
  * - 'chatgpt_oauth' → openai + oauth
  * - 'openai_api_key' → openai + api_key
  * - 'copilot_oauth' → copilot + oauth
+ * - 'qwen_oauth' → qwen + oauth (CLI-based flow)
+ * - 'qwen_api_key' → qwen + api_key
  */
 export type ApiSetupMethod =
   | 'anthropic_api_key'
@@ -41,6 +45,8 @@ export type ApiSetupMethod =
   | 'chatgpt_oauth'
   | 'openai_api_key'
   | 'copilot_oauth'
+  | 'qwen_oauth'
+  | 'qwen_api_key'
 
 /**
  * Map ApiSetupMethod to the underlying LLM connection types.
@@ -60,6 +66,10 @@ export function apiSetupMethodToConnectionTypes(method: ApiSetupMethod): {
       return { providerType: 'openai', authType: 'api_key' };
     case 'copilot_oauth':
       return { providerType: 'copilot', authType: 'oauth' };
+    case 'qwen_oauth':
+      return { providerType: 'qwen', authType: 'oauth' };
+    case 'qwen_api_key':
+      return { providerType: 'qwen', authType: 'api_key' };
   }
 }
 
@@ -106,6 +116,20 @@ const API_SETUP_OPTIONS: ApiSetupOption[] = [
     description: 'Use your GitHub Copilot subscription.',
     icon: <Cpu className="size-4" />,
     providerType: 'copilot',
+  },
+  {
+    id: 'qwen_oauth',
+    name: 'Qwen Code · OAuth (Free)',
+    description: 'Sign in with qwen.ai account (free: 1000 req/day).',
+    icon: <Cpu className="size-4" />,
+    providerType: 'qwen',
+  },
+  {
+    id: 'qwen_api_key',
+    name: 'Qwen Code · API Key',
+    description: 'Use API key for authentication.',
+    icon: <Key className="size-4" />,
+    providerType: 'qwen',
   },
 ]
 
@@ -187,7 +211,7 @@ function ProviderSegmentedControl({
   activeSegment: ProviderSegment
   onSegmentChange: (segment: ProviderSegment) => void
 }) {
-  const segments: ProviderSegment[] = ['anthropic', 'openai', 'copilot']
+  const segments: ProviderSegment[] = ['anthropic', 'openai', 'copilot', 'qwen']
 
   return (
     <div className="flex rounded-xl bg-foreground/[0.03] p-1 mb-4">
