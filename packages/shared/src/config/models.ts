@@ -118,50 +118,25 @@ export const MODEL_REGISTRY: ModelDefinition[] = [
 
   // ----------------------------------------
   // Qwen Code Models
-  // Note: qwen-code 0.10.5 OAuth mode currently only supports 'coder-model'
-  // Other models require API Key authentication via settings.json
+  // Note: Qwen Code manages models internally via ~/.qwen/settings.json
+  // OAuth mode supports two models: coder-model (default) and vision-model
   // See: https://github.com/joeytoday/qwen-code
   // ----------------------------------------
-  
-  // Default Qwen OAuth model (qwen-code 0.10.5)
   {
-    id: 'coder-model',
-    name: 'Qwen3 Coder',
-    shortName: 'Qwen3 Coder',
-    description: 'Default Qwen OAuth model (coding optimized)',
+    id: 'qwen/coder-model',
+    name: 'Qwen Coder',
+    shortName: 'Qwen Coder',
+    description: 'Qwen 3.5 Plus — efficient hybrid model with leading coding performance',
     provider: 'qwen',
     contextWindow: 256_000,
-    supportsThinking: true,
-  },
-  
-  // API Key models (require settings.json configuration)
-  // These can be used with --auth-type=openai and proper settings.json
-  {
-    id: 'qwen3.5-plus',
-    name: 'Qwen3.5 Plus (API Key)',
-    shortName: 'Qwen3.5 Plus',
-    description: 'Latest flagship via API Key',
-    provider: 'qwen',
-    contextWindow: 256_000,
-    supportsThinking: true,
   },
   {
-    id: 'qwen3-coder-plus',
-    name: 'Qwen3 Coder Plus (API Key)',
-    shortName: 'Qwen3 Coder Plus',
-    description: 'Coding model via API Key',
+    id: 'qwen/vision-model',
+    name: 'Qwen Vision',
+    shortName: 'Qwen Vision',
+    description: 'The latest Qwen Vision model from Alibaba Cloud ModelStudio (version: qwen3-vl-plus-2025-09-23)',
     provider: 'qwen',
     contextWindow: 256_000,
-    supportsThinking: true,
-  },
-  {
-    id: 'qwen3-max',
-    name: 'Qwen3 Max (API Key)',
-    shortName: 'Qwen3 Max',
-    description: 'Strongest model via API Key',
-    provider: 'qwen',
-    contextWindow: 256_000,
-    supportsThinking: true,
   },
 ];
 

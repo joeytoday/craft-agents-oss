@@ -12,6 +12,7 @@ import {
   ANTHROPIC_MODELS,
   OPENAI_MODELS,
   QWEN_MODELS,
+  getModelsByProvider,
 } from './models';
 
 // ============================================================
@@ -380,6 +381,10 @@ export function getModelsForProviderType(providerType: LlmProviderType): ModelDe
     return []; // Copilot models are dynamic — fetched via listModels(), no hardcoded fallbacks
   }
 
+  if (providerType === 'qwen') {
+    return QWEN_MODELS; // Qwen OAuth supports coder-model and vision-model
+  }
+
   // Anthropic, Bedrock, Vertex all use Claude models
   return ANTHROPIC_MODELS;
 }
@@ -401,7 +406,7 @@ export function getDefaultModelsForConnection(providerType: LlmProviderType): Ar
   ];
   if (providerType === 'openai') return OPENAI_MODELS;
   if (providerType === 'copilot') return []; // Dynamic — fetched via listModels()
-  if (providerType === 'qwen') return QWEN_MODELS;
+  if (providerType === 'qwen') return QWEN_MODELS; // Qwen OAuth now supports coder-model and vision-model
   if (providerType === 'anthropic_compat') return [
     'anthropic/claude-opus-4.6',
     'anthropic/claude-sonnet-4.5',

@@ -19,8 +19,7 @@ import type {
 } from './backend/types.ts';
 import { AbortReason } from './backend/types.ts';
 
-// Import models from centralized registry
-import { getModelIdByShortName } from '../config/models.ts';
+// Qwen models are managed by Qwen CLI configuration (~/.qwen/settings.json)
 
 // LLM tool types and helpers for call_llm PreToolUse intercept
 import { type LLMQueryRequest, type LLMQueryResult } from './llm-tool.ts';
@@ -41,7 +40,7 @@ import { debug } from '../utils/debug.ts';
 import { spawn } from 'node:child_process';
 import { promisify } from 'node:util';
 
-const DEFAULT_QWEN_MODEL = getModelIdByShortName('Qwen3 Coder');
+// No default model — Qwen CLI uses its own configuration from ~/.qwen/settings.json
 
 // Qwen CLI event types
 interface QwenEvent {
@@ -88,10 +87,25 @@ export class QwenAgent extends BaseAgent {
   onAuthRequest: ((request: AuthRequest) => void) | null = null;
 
   constructor(config: BackendConfig) {
-    const modelDef = { contextWindow: 256000 }; // Qwen3.5 Plus context window
-    super(config, DEFAULT_QWEN_MODEL, modelDef.contextWindow);
+    // Qwen CLI uses 'coder-model' or 'vision-model' as model identifiers
+    // Convert from prefixed format (qwen/coder-model) to Qwen CLI format
+    const defaultModel = config.model ? QwenAgent.convertToQwenModelId(config.model) : 'coder-model';
+    const modelDef = { contextWindow: 256000 }; // Qwen default context window
+    super(config, defaultModel, modelDef.contextWindow);
     this.qwenThreadId = config.session?.sdkSessionId || null;
-    this.debug(`Qwen backend initialized${this.qwenThreadId ? ` (will resume thread ${this.qwenThreadId})` : ''}`);
+    this.debug(`Qwen backend initialized with model: ${defaultModel}${this.qwenThreadId ? ` (will resume thread ${this.qwenThreadId})` : ''}`);
+  }
+
+  /**
+   * Convert model ID from registry format (qwen/coder-model) to Qwen CLI format (coder-model)
+   */
+  private static convertToQwenModelId(modelId: string): string {
+    // Handle both prefixed and non-prefixed model IDs
+    if (modelId.startsWith('qwen/')) {
+      return modelId.replace('qwen/', '');
+    }
+    // Already in Qwen CLI format
+    return modelId;
   }
 
   protected override debug(message: string): void {
@@ -301,6 +315,7 @@ export class QwenAgent extends BaseAgent {
                 yield {
                   type: 'text_delta',
                   text: delta,
+                  turnId,
                 };
                 hasOutput = true;
               }
@@ -344,6 +359,15 @@ export class QwenAgent extends BaseAgent {
       // If no output was generated, yield an error
       if (!hasOutput && !events.some(e => e.type === 'error' || e.is_error)) {
         this.debug('No output generated');
+      }
+
+      // Yield text_complete to mark the end of the assistant message
+      if (accumulatedText) {
+        yield {
+          type: 'text_complete',
+          text: accumulatedText,
+          turnId,
+        };
       }
 
       yield { type: 'complete' };
@@ -429,9 +453,10 @@ export class QwenAgent extends BaseAgent {
 
   /**
    * Set model.
+   * Accepts both registry format (qwen/coder-model) and Qwen CLI format (coder-model)
    */
   setModel(model: string): void {
-    this._model = model;
+    this._model = QwenAgent.convertToQwenModelId(model);
   }
 
   // ============================================================

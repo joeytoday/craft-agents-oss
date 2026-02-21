@@ -2730,7 +2730,8 @@ export class SessionManager {
         }
       } else if (provider === 'qwen') {
         // Qwen Code backend - uses qwen CLI
-        const resolvedModel = managed.model || connection?.defaultModel || 'qwen3-coder-plus'
+        // Model is managed by Qwen CLI configuration (~/.qwen/settings.json)
+        const resolvedModel = managed.model || connection?.defaultModel
 
         managed.agent = new QwenAgent({
           workspace: managed.workspace,

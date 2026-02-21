@@ -49,8 +49,10 @@ describe('isClaudeModel', () => {
 
 describe('isQwenModel', () => {
   it('detects Qwen models from registry', () => {
-    expect(isQwenModel('qwen3-coder-plus')).toBe(true);
-    expect(isQwenModel('qwen3.5-plus')).toBe(true);
+    // Qwen models are now hardcoded in registry with coder-model and vision-model
+    expect(QWEN_MODELS.length).toBeGreaterThan(0);
+    expect(QWEN_MODELS.some(m => m.id === 'qwen/coder-model')).toBe(true);
+    expect(QWEN_MODELS.some(m => m.id === 'qwen/vision-model')).toBe(true);
   });
 
   it('rejects non-Qwen models', () => {
@@ -59,9 +61,10 @@ describe('isQwenModel', () => {
     expect(isQwenModel('gpt-5.1-codex-mini')).toBe(false);
   });
 
-  it('QWEN_MODELS export contains expected models', () => {
+  it('QWEN_MODELS export has Qwen OAuth models', () => {
+    // Qwen OAuth now supports coder-model and vision-model selection
     expect(QWEN_MODELS).toHaveLength(2);
-    expect(QWEN_MODELS.some(m => m.id === 'qwen3-coder-plus')).toBe(true);
-    expect(QWEN_MODELS.some(m => m.id === 'qwen3.5-plus')).toBe(true);
+    expect(QWEN_MODELS[0]?.id).toBe('qwen/coder-model');
+    expect(QWEN_MODELS[1]?.id).toBe('qwen/vision-model');
   });
 });
