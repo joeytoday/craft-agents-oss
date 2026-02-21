@@ -177,7 +177,7 @@ const api: ElectronAPI = {
   clearClaudeOAuthState: () => ipcRenderer.invoke(IPC_CHANNELS.ONBOARDING_CLEAR_CLAUDE_OAUTH_STATE),
   // Qwen OAuth (CLI-based flow)
   startQwenOAuth: () => ipcRenderer.invoke(IPC_CHANNELS.ONBOARDING_START_QWEN_OAUTH),
-  exchangeQwenCode: (connectionSlug: string, tokens: { accessToken: string; refreshToken?: string; expiresAt?: number }) =>
+  exchangeQwenCode: (connectionSlug: string, tokens: { accessToken: string; refreshToken?: string; expiresAt?: number; tokenType?: string }) =>
     ipcRenderer.invoke(IPC_CHANNELS.ONBOARDING_EXCHANGE_QWEN_OAUTH, connectionSlug, tokens),
 
   // ChatGPT OAuth (for Codex chatgptAuthTokens mode)

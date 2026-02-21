@@ -479,18 +479,37 @@ export function useOnboarding({
         const result = await window.electronAPI.startQwenOAuth()
 
         if (result.success) {
-          // Save OAuth tokens to connection
-          await window.electronAPI.exchangeQwenCode(connectionSlug, {
-            accessToken: result.accessToken,
-            refreshToken: result.refreshToken,
-            expiresAt: result.expiresAt,
-          })
-          await handleSaveConfig(undefined)
-          setState(s => ({
-            ...s,
-            credentialStatus: 'success',
-            step: 'complete',
-          }))
+          try {
+            // Save OAuth tokens to connection
+            const exchangeResult = await window.electronAPI.exchangeQwenCode(connectionSlug, {
+              accessToken: result.accessToken,
+              refreshToken: result.refreshToken,
+              expiresAt: result.expiresAt,
+              tokenType: result.tokenType || 'Bearer',
+            })
+
+            if (!exchangeResult.success) {
+              throw new Error(exchangeResult.error || 'Failed to save tokens')
+            }
+
+            console.log('[Onboarding] Qwen tokens saved, completing setup...')
+            
+            // Save the connection configuration
+            await handleSaveConfig(undefined)
+            
+            setState(s => ({
+              ...s,
+              credentialStatus: 'success',
+              step: 'complete',
+            }))
+          } catch (error) {
+            console.error('[Onboarding] Qwen exchange error:', error)
+            setState(s => ({
+              ...s,
+              credentialStatus: 'error',
+              errorMessage: error instanceof Error ? error.message : 'Failed to save configuration',
+            }))
+          }
         } else {
           setState(s => ({
             ...s,

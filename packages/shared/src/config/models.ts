@@ -117,22 +117,60 @@ export const MODEL_REGISTRY: ModelDefinition[] = [
   // ----------------------------------------
 
   // ----------------------------------------
-  // Qwen Code Models
+  // Qwen Code Models (Alibaba Cloud Bailian/DashScope)
+  // Model IDs match the DashScope API model names
+  // See: https://help.aliyun.com/zh/model-studio/qwen-api-reference/
   // ----------------------------------------
   {
-    id: 'qwen3-coder-plus',
-    name: 'Qwen3 Coder Plus',
-    shortName: 'Qwen3 Coder',
-    description: 'Alibaba Qwen3 Coder model via Qwen Code',
+    id: 'qwen-turbo',
+    name: 'Qwen Turbo',
+    shortName: 'Qwen Turbo',
+    description: '速度快，成本低',
+    provider: 'qwen',
+    contextWindow: 131_072,
+    supportsThinking: false,
+  },
+  {
+    id: 'qwen-plus',
+    name: 'Qwen Plus',
+    shortName: 'Qwen Plus',
+    description: '性能平衡（推荐）',
+    provider: 'qwen',
+    contextWindow: 131_072,
+    supportsThinking: true,
+  },
+  {
+    id: 'qwen-max',
+    name: 'Qwen Max',
+    shortName: 'Qwen Max',
+    description: '最强性能（千亿参数）',
+    provider: 'qwen',
+    contextWindow: 32_768,
+    supportsThinking: true,
+  },
+  {
+    id: 'qwen-max-longcontext',
+    name: 'Qwen Max Long Context',
+    shortName: 'Qwen Max LC',
+    description: '长上下文版本',
     provider: 'qwen',
     contextWindow: 256_000,
     supportsThinking: true,
   },
   {
-    id: 'qwen3.5-plus',
-    name: 'Qwen3.5 Plus',
-    shortName: 'Qwen3.5',
-    description: 'Alibaba Qwen3.5 Plus model with thinking support',
+    id: 'qwen3-max',
+    name: 'Qwen3 Max',
+    shortName: 'Qwen3 Max',
+    description: 'Qwen3 最强模型',
+    provider: 'qwen',
+    contextWindow: 256_000,
+    supportsThinking: true,
+  },
+  {
+    id: 'qwen3-coder-plus',
+    name: 'Qwen3 Coder Plus',
+    shortName: 'Qwen3 Coder',
+    description: '编程专用模型',
     provider: 'qwen',
     contextWindow: 256_000,
     supportsThinking: true,

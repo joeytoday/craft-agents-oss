@@ -989,6 +989,10 @@ export interface ElectronAPI {
   hasClaudeOAuthState(): Promise<boolean>
   clearClaudeOAuthState(): Promise<{ success: boolean }>
 
+  // Qwen OAuth (CLI-based flow)
+  startQwenOAuth(): Promise<{ success: boolean; accessToken?: string; refreshToken?: string; expiresAt?: number; tokenType?: string; error?: string }>
+  exchangeQwenCode(connectionSlug: string, tokens: { accessToken: string; refreshToken?: string; expiresAt?: number; tokenType?: string }): Promise<{ success: boolean; error?: string }>
+
   // ChatGPT OAuth (for Codex chatgptAuthTokens mode)
   // Note: startChatGptOAuth opens browser and completes full OAuth flow internally
   startChatGptOAuth(connectionSlug: string): Promise<{ success: boolean; error?: string }>

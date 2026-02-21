@@ -43,11 +43,11 @@ export interface ApiKeyInputProps {
   /** Disable the input (e.g. during validation) */
   disabled?: boolean
   /** Provider type determines which presets and placeholders to show */
-  providerType?: 'anthropic' | 'openai'
+  providerType?: 'anthropic' | 'openai' | 'qwen'
 }
 
 // Preset key includes both provider defaults ('anthropic', 'openai') and third-party services
-type PresetKey = 'anthropic' | 'openai' | 'openrouter' | 'vercel' | 'ollama' | 'custom'
+type PresetKey = 'anthropic' | 'openai' | 'qwen' | 'openrouter' | 'vercel' | 'ollama' | 'custom'
 
 interface Preset {
   key: PresetKey
@@ -65,16 +65,22 @@ const ANTHROPIC_PRESETS: Preset[] = [
 ]
 
 // OpenAI provider presets - for Codex backend
-// Only direct OpenAI is supported; 3PP providers (OpenRouter, Vercel, Ollama) should be
-// configured via the Anthropic/Claude connection which routes through the Claude Agent SDK.
 const OPENAI_PRESETS: Preset[] = [
   { key: 'openai', label: 'OpenAI', url: '' },
+]
+
+// Qwen provider presets - for Alibaba Cloud Bailian/DashScope
+const QWEN_PRESETS: Preset[] = [
+  { key: 'qwen', label: '阿里云百炼', url: 'https://dashscope.aliyuncs.com/compatible-mode/v1' },
+  { key: 'openrouter', label: 'OpenRouter', url: 'https://openrouter.ai/api' },
+  { key: 'custom', label: 'Custom', url: '' },
 ]
 
 const COMPAT_ANTHROPIC_DEFAULTS = 'anthropic/claude-opus-4.6, anthropic/claude-sonnet-4.5, anthropic/claude-haiku-4.5'
 const COMPAT_OPENAI_DEFAULTS = 'openai/gpt-5.2-codex, openai/gpt-5.1-codex-mini'
 
-function getPresetsForProvider(providerType: 'anthropic' | 'openai'): Preset[] {
+function getPresetsForProvider(providerType: 'anthropic' | 'openai' | 'qwen'): Preset[] {
+  if (providerType === 'qwen') return QWEN_PRESETS
   return providerType === 'openai' ? OPENAI_PRESETS : ANTHROPIC_PRESETS
 }
 

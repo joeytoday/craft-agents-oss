@@ -151,23 +151,29 @@ export function registerOnboardingHandlers(sessionManager: SessionManager): void
       // Check if Qwen CLI is installed
       const isInstalled = await isQwenCliInstalled()
       if (!isInstalled) {
+        mainLog.error('[Onboarding] Qwen CLI not installed')
         return {
           success: false,
           error: 'Qwen CLI not found. Please install it with: npm install -g @qwen-code/qwen-code',
         }
       }
 
+      mainLog.info('[Onboarding] Qwen CLI found, starting OAuth...')
+
       // Start OAuth flow
       await startQwenOAuth((status) => {
         mainLog.info('[Onboarding] Qwen OAuth status:', status)
       })
 
+      mainLog.info('[Onboarding] Qwen OAuth process completed, reading tokens...')
+
       // Read tokens from Qwen config
       const tokens = await getQwenOAuthTokens()
       if (!tokens) {
+        mainLog.error('[Onboarding] No tokens found in Qwen config')
         return {
           success: false,
-          error: 'Failed to read Qwen tokens. Please try again.',
+          error: 'Authentication completed but no tokens found. Please try again.',
         }
       }
 
@@ -177,10 +183,11 @@ export function registerOnboardingHandlers(sessionManager: SessionManager): void
         accessToken: tokens.accessToken,
         refreshToken: tokens.refreshToken,
         expiresAt: tokens.expiresAt,
+        tokenType: tokens.tokenType || 'Bearer',
       }
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Unknown error'
-      mainLog.error('[Onboarding] Start Qwen OAuth error:', message)
+      mainLog.error('[Onboarding] Start Qwen OAuth error:', message, error)
       return { success: false, error: message }
     }
   })
@@ -190,6 +197,7 @@ export function registerOnboardingHandlers(sessionManager: SessionManager): void
     accessToken: string
     refreshToken?: string
     expiresAt?: number
+    tokenType?: string
   }) => {
     try {
       mainLog.info(`[Onboarding] Saving Qwen OAuth tokens for connection: ${connectionSlug}`)
@@ -199,6 +207,7 @@ export function registerOnboardingHandlers(sessionManager: SessionManager): void
         accessToken: tokens.accessToken,
         refreshToken: tokens.refreshToken,
         expiresAt: tokens.expiresAt,
+        idToken: tokens.accessToken, // Qwen uses access token as ID token
       })
 
       mainLog.info('[Onboarding] Qwen OAuth tokens saved successfully')

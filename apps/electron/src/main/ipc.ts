@@ -90,6 +90,16 @@ const BUILT_IN_CONNECTION_TEMPLATES: Record<string, {
     providerType: 'copilot',
     authType: 'oauth',
   },
+  'qwen': {
+    name: 'Qwen Code',
+    providerType: 'qwen',
+    authType: 'oauth',
+  },
+  'qwen-api': {
+    name: 'Qwen Code (API Key)',
+    providerType: 'qwen',
+    authType: 'api_key',
+  },
 }
 
 /**

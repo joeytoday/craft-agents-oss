@@ -3,7 +3,7 @@ import * as Sentry from '@sentry/electron/main'
 import { basename, join } from 'path'
 import { existsSync } from 'fs'
 import { rm, readFile, mkdir, writeFile, rename, open } from 'fs/promises'
-import { CraftAgent, type AgentEvent, setPermissionMode, type PermissionMode, unregisterSessionScopedToolCallbacks, AbortReason, type AuthRequest, type AuthResult, type CredentialAuthRequest } from '@craft-agent/shared/agent'
+import { CraftAgent, QwenAgent, type AgentEvent, setPermissionMode, type PermissionMode, unregisterSessionScopedToolCallbacks, AbortReason, type AuthRequest, type AuthResult, type CredentialAuthRequest } from '@craft-agent/shared/agent'
 import {
   CodexBackend,
   CodexAgent,
@@ -2463,7 +2463,7 @@ export class SessionManager {
       }
 
       // Determine provider from connection or fall back to legacy authType
-      let provider: 'anthropic' | 'openai' | 'copilot'
+      let provider: 'anthropic' | 'openai' | 'copilot' | 'qwen'
       let authType: LlmAuthType | undefined
 
       if (connection) {
@@ -2728,6 +2728,58 @@ export class SessionManager {
           await setupCopilotBridgeConfig(copilotConfigDir, enabledSources)
           copilotAgent.setSourceServers(mcpServers, apiServers, enabledSlugs)
         }
+      } else if (provider === 'qwen') {
+        // Qwen Code backend - uses qwen CLI
+        const resolvedModel = managed.model || connection?.defaultModel || 'qwen3-coder-plus'
+
+        managed.agent = new QwenAgent({
+          workspace: managed.workspace,
+          model: resolvedModel,
+          miniModel: connection ? (getMiniModel(connection) ?? connection.defaultModel) : undefined,
+          thinkingLevel: managed.thinkingLevel,
+          connectionSlug: connection?.slug,
+          isHeadless: !AGENT_FLAGS.defaultModesEnabled,
+          hookSystem: this.hookSystems.get(managed.workspace.rootPath),
+          systemPromptPreset: managed.systemPromptPreset,
+          session: {
+            id: managed.id,
+            workspaceRootPath: managed.workspace.rootPath,
+            sdkSessionId: managed.sdkSessionId,
+            createdAt: managed.lastMessageAt,
+            lastUsedAt: managed.lastMessageAt,
+            workingDirectory: managed.workingDirectory,
+            sdkCwd: managed.sdkCwd,
+            model: managed.model,
+            llmConnection: managed.llmConnection,
+          },
+          onSdkSessionIdUpdate: (sdkSessionId: string) => {
+            managed.sdkSessionId = sdkSessionId
+            sessionLog.info(`Qwen session ID captured for ${managed.id}: ${sdkSessionId}`)
+            this.persistSession(managed)
+            sessionPersistenceQueue.flush(managed.id)
+          },
+          onSdkSessionIdCleared: () => {
+            managed.sdkSessionId = undefined
+            sessionLog.info(`Qwen session ID cleared for ${managed.id} (resume recovery)`)
+            this.persistSession(managed)
+            sessionPersistenceQueue.flush(managed.id)
+          },
+          getRecoveryMessages: () => {
+            const relevantMessages = managed.messages
+              .filter(m => m.role === 'user' || m.role === 'assistant')
+              .filter(m => !m.isIntermediate)
+              .slice(-6)
+            return relevantMessages.map(m => ({
+              type: m.role as 'user' | 'assistant',
+              content: m.content,
+            }))
+          },
+          debugMode: isDebugMode ? {
+            enabled: true,
+            logFilePath: getLogFilePath(),
+          } : undefined,
+        })
+        sessionLog.info(`Created Qwen agent for session ${managed.id}${managed.sdkSessionId ? ' (resuming)' : ''}`)
       } else {
         // Claude backend - uses Anthropic SDK
         // Set auth credentials for this session's connection BEFORE creating the agent.

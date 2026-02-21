@@ -25,6 +25,7 @@ interface CredentialsStepProps {
   errorMessage?: string
   onSubmit: (data: ApiKeySubmitData) => void
   onStartOAuth?: (methodOverride?: ApiSetupMethod) => void
+  onContinue?: () => void
   onBack: () => void
   // Two-step OAuth flow
   isWaitingForCode?: boolean
@@ -128,15 +129,24 @@ export function CredentialsStep({
         actions={
           <>
             <BackButton onClick={onBack} disabled={status === 'validating'} />
-            <ContinueButton
-              onClick={() => onStartOAuth?.()}
-              className="gap-2"
-              loading={status === 'validating'}
-              loadingText="Connecting..."
-            >
-              <ExternalLink className="size-4" />
-              Sign in with Qwen
-            </ContinueButton>
+            {status === 'success' ? (
+              <ContinueButton
+                onClick={() => onContinue?.()}
+                className="gap-2"
+              >
+                Continue
+              </ContinueButton>
+            ) : (
+              <ContinueButton
+                onClick={() => onStartOAuth?.()}
+                className="gap-2"
+                loading={status === 'validating'}
+                loadingText="Connecting..."
+              >
+                <ExternalLink className="size-4" />
+                Sign in with Qwen
+              </ContinueButton>
+            )}
           </>
         }
       >
@@ -288,7 +298,7 @@ export function CredentialsStep({
   const apiKeyDescription = isOpenAiApiKey
     ? "Enter your OpenAI API key."
     : isQwenApiKey
-    ? "Enter your Alibaba Cloud API key for Qwen Code."
+    ? "Enter your 阿里云百炼 API key."
     : "Enter your API key. Optionally configure a custom endpoint for OpenRouter, Ollama, or compatible APIs."
 
   return (
