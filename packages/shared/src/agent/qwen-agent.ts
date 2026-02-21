@@ -89,11 +89,15 @@ export class QwenAgent extends BaseAgent {
   constructor(config: BackendConfig) {
     // Qwen CLI uses 'coder-model' or 'vision-model' as model identifiers
     // Convert from prefixed format (qwen/coder-model) to Qwen CLI format
-    const defaultModel = config.model ? QwenAgent.convertToQwenModelId(config.model) : 'coder-model';
+    // Must convert BEFORE calling super() since BaseAgent uses config.model directly
+    if (config.model) {
+      config.model = QwenAgent.convertToQwenModelId(config.model);
+    }
+    const defaultModel = config.model || 'coder-model';
     const modelDef = { contextWindow: 256000 }; // Qwen default context window
     super(config, defaultModel, modelDef.contextWindow);
     this.qwenThreadId = config.session?.sdkSessionId || null;
-    this.debug(`Qwen backend initialized with model: ${defaultModel}${this.qwenThreadId ? ` (will resume thread ${this.qwenThreadId})` : ''}`);
+    this.debug(`Qwen backend initialized with model: ${this._model}${this.qwenThreadId ? ` (will resume thread ${this.qwenThreadId})` : ''}`);
   }
 
   /**
