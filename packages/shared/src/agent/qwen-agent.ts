@@ -67,6 +67,11 @@ interface QwenEvent {
   };
 }
 
+// Generate a unique turn ID for each assistant response
+function generateTurnId(): string {
+  return `turn-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+}
+
 /**
  * Backend implementation using the Qwen Code CLI.
  * Uses subprocess execution for each message exchange.
@@ -83,7 +88,7 @@ export class QwenAgent extends BaseAgent {
   onAuthRequest: ((request: AuthRequest) => void) | null = null;
 
   constructor(config: BackendConfig) {
-    const modelDef = { contextWindow: 128000 }; // Qwen3 Coder context window
+    const modelDef = { contextWindow: 256000 }; // Qwen3.5 Plus context window
     super(config, DEFAULT_QWEN_MODEL, modelDef.contextWindow);
     this.qwenThreadId = config.session?.sdkSessionId || null;
     this.debug(`Qwen backend initialized${this.qwenThreadId ? ` (will resume thread ${this.qwenThreadId})` : ''}`);
@@ -239,8 +244,9 @@ export class QwenAgent extends BaseAgent {
     try {
       this.debug(`Starting chat with message: ${message.substring(0, 50)}...`);
       
-      // Set ultrathink if enabled (Note: Qwen doesn't support this directly)
-      this.debug('Chat started');
+      // Generate a unique turn ID for this assistant response
+      const turnId = generateTurnId();
+      this.debug(`Generated turnId: ${turnId}`);
 
       // Execute Qwen CLI
       const events = await this.executeQwen(message, attachments);
