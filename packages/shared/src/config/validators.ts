@@ -64,7 +64,7 @@ const WorkspaceSchema = z.object({
 // --- LLM Connection schema for config validation ---
 
 const LlmProviderTypeSchema = z.enum([
-  'anthropic', 'anthropic_compat', 'openai', 'openai_compat', 'bedrock', 'vertex', 'copilot',
+  'anthropic', 'anthropic_compat', 'openai', 'openai_compat', 'bedrock', 'vertex', 'copilot', 'qwen',
 ]);
 
 const LlmAuthTypeSchema = z.enum([

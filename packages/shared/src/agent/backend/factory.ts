@@ -18,6 +18,7 @@ import type { AgentBackend, BackendConfig, AgentProvider, LlmProviderType, LlmAu
 import { ClaudeAgent } from '../claude-agent.ts';
 import { CodexAgent } from '../codex-agent.ts';
 import { CopilotAgent } from '../copilot-agent.ts';
+import { QwenAgent } from '../qwen-agent.ts';
 import {
   getLlmConnection,
   getDefaultLlmConnection,
@@ -91,6 +92,11 @@ export function createBackend(config: BackendConfig): AgentBackend {
       // Auth is handled via GitHub OAuth
       return new CopilotAgent(config);
 
+    case 'qwen':
+      // QwenAgent implements AgentBackend directly
+      // Auth is handled via Qwen OAuth or API key
+      return new QwenAgent(config);
+
     default:
       throw new Error(`Unknown provider: ${config.provider}`);
   }
@@ -108,7 +114,7 @@ export const createAgent = createBackend;
  * @returns Array of provider identifiers that have working implementations
  */
 export function getAvailableProviders(): AgentProvider[] {
-  return ['anthropic', 'openai', 'copilot'];
+  return ['anthropic', 'openai', 'copilot', 'qwen'];
 }
 
 /**
@@ -152,6 +158,10 @@ export function providerTypeToAgentProvider(providerType: LlmProviderType): Agen
     // GitHub Copilot backend
     case 'copilot':
       return 'copilot';
+
+    // Qwen Code backend
+    case 'qwen':
+      return 'qwen';
 
     default:
       // Exhaustive check

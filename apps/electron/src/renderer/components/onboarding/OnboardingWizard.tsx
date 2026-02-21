@@ -130,6 +130,7 @@ export function OnboardingWizard({
             errorMessage={state.errorMessage}
             onSubmit={onSubmitCredential}
             onStartOAuth={onStartOAuth}
+            onContinue={onContinue}
             onBack={onBack}
             isWaitingForCode={isWaitingForCode}
             onSubmitAuthCode={onSubmitAuthCode}

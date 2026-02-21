@@ -17,7 +17,7 @@
 /**
  * Provider identifier for AI backends.
  */
-export type ModelProvider = 'anthropic' | 'openai' | 'copilot';
+export type ModelProvider = 'anthropic' | 'openai' | 'copilot' | 'qwen';
 
 /**
  * Full model definition with capabilities and costs.
@@ -115,6 +115,29 @@ export const MODEL_REGISTRY: ModelDefinition[] = [
   // No hardcoded entries — models are discovered at runtime via client.listModels()
   // and stored on the connection. See fetchAndStoreCopilotModels() in ipc.ts.
   // ----------------------------------------
+
+  // ----------------------------------------
+  // Qwen Code Models
+  // Note: Qwen Code manages models internally via ~/.qwen/settings.json
+  // OAuth mode supports two models: coder-model (default) and vision-model
+  // See: https://github.com/joeytoday/qwen-code
+  // ----------------------------------------
+  {
+    id: 'qwen/coder-model',
+    name: 'Qwen Coder',
+    shortName: 'Qwen Coder',
+    description: 'Qwen 3.5 Plus — efficient hybrid model with leading coding performance',
+    provider: 'qwen',
+    contextWindow: 256_000,
+  },
+  {
+    id: 'qwen/vision-model',
+    name: 'Qwen Vision',
+    shortName: 'Qwen Vision',
+    description: 'The latest Qwen Vision model from Alibaba Cloud ModelStudio (version: qwen3-vl-plus-2025-09-23)',
+    provider: 'qwen',
+    contextWindow: 256_000,
+  },
 ];
 
 // ============================================
@@ -136,6 +159,9 @@ export const OPENAI_MODELS = getModelsByProvider('openai');
 
 /** All GitHub Copilot models */
 export const COPILOT_MODELS = getModelsByProvider('copilot');
+
+/** All Qwen Code models */
+export const QWEN_MODELS = getModelsByProvider('qwen');
 
 /**
  * Legacy compatibility export.
@@ -275,6 +301,14 @@ export function isCodexModel(modelId: string): boolean {
 export function isCopilotModel(modelId: string): boolean {
   const model = getModelById(modelId);
   return model?.provider === 'copilot';
+}
+
+/**
+ * Check if a model ID refers to a Qwen model.
+ */
+export function isQwenModel(modelId: string): boolean {
+  const model = getModelById(modelId);
+  return model?.provider === 'qwen';
 }
 
 /**

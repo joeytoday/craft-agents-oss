@@ -2,7 +2,7 @@
  * Tests for model detection utilities in config/models.ts
  */
 import { describe, it, expect } from 'bun:test';
-import { isClaudeModel, isOpusModel, getModelShortName } from '../src/config/models.ts';
+import { isClaudeModel, isOpusModel, getModelShortName, isQwenModel, QWEN_MODELS } from '../src/config/models.ts';
 
 describe('isClaudeModel', () => {
   // Direct Anthropic model IDs
@@ -44,5 +44,27 @@ describe('isClaudeModel', () => {
     expect(isClaudeModel('Claude-Sonnet-4-5-20250929')).toBe(true);
     expect(isClaudeModel('CLAUDE-OPUS-4-6')).toBe(true);
     expect(isClaudeModel('Anthropic/Claude-Sonnet-4')).toBe(true);
+  });
+});
+
+describe('isQwenModel', () => {
+  it('detects Qwen models from registry', () => {
+    // Qwen models are now hardcoded in registry with coder-model and vision-model
+    expect(QWEN_MODELS.length).toBeGreaterThan(0);
+    expect(QWEN_MODELS.some(m => m.id === 'qwen/coder-model')).toBe(true);
+    expect(QWEN_MODELS.some(m => m.id === 'qwen/vision-model')).toBe(true);
+  });
+
+  it('rejects non-Qwen models', () => {
+    expect(isQwenModel('claude-sonnet-4-5-20250929')).toBe(false);
+    expect(isQwenModel('gpt-5.3-codex')).toBe(false);
+    expect(isQwenModel('gpt-5.1-codex-mini')).toBe(false);
+  });
+
+  it('QWEN_MODELS export has Qwen OAuth models', () => {
+    // Qwen OAuth now supports coder-model and vision-model selection
+    expect(QWEN_MODELS).toHaveLength(2);
+    expect(QWEN_MODELS[0]?.id).toBe('qwen/coder-model');
+    expect(QWEN_MODELS[1]?.id).toBe('qwen/vision-model');
   });
 });

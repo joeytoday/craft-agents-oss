@@ -6,6 +6,10 @@ export { CodexAgent, CodexBackend } from './codex-agent.ts';
 
 // Export CopilotAgent for direct use
 export { CopilotAgent, CopilotBackend, resolveCopilotModelId } from './copilot-agent.ts';
+
+// Export QwenAgent for direct use
+export { QwenAgent } from './qwen-agent.ts';
+export type { QwenBackend } from './qwen-agent.ts';
 export * from './errors.ts';
 export * from './options.ts';
 
@@ -128,6 +132,7 @@ export {
   // Agent implementations (both implement AgentBackend directly)
   ClaudeAgent as BackendClaudeAgent, // Alias to avoid conflict with direct export
   CodexAgent as BackendCodexAgent, // Avoid conflict with direct export above
+  QwenAgent as BackendQwenAgent, // Alias to avoid conflict with direct export
   // Types
   type AgentBackend,
   type AgentProvider,

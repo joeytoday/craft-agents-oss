@@ -8,6 +8,7 @@ import { mainLog } from './logger'
 import { getAuthState, getSetupNeeds } from '@craft-agent/shared/auth'
 import { getCredentialManager } from '@craft-agent/shared/credentials'
 import { CraftOAuth, startClaudeOAuth, exchangeClaudeCode, hasValidOAuthState, clearOAuthState } from '@craft-agent/shared/auth'
+import { startQwenOAuth, getQwenOAuthTokens, isQwenCliInstalled } from '@craft-agent/shared/auth'
 import { validateMcpConnection } from '@craft-agent/shared/mcp'
 import { IPC_CHANNELS } from '../shared/types'
 import type { SessionManager } from './sessions'
@@ -140,5 +141,81 @@ export function registerOnboardingHandlers(sessionManager: SessionManager): void
   ipcMain.handle(IPC_CHANNELS.ONBOARDING_CLEAR_CLAUDE_OAUTH_STATE, async () => {
     clearOAuthState()
     return { success: true }
+  })
+
+  // Start Qwen OAuth flow (CLI-based)
+  ipcMain.handle(IPC_CHANNELS.ONBOARDING_START_QWEN_OAUTH, async () => {
+    try {
+      mainLog.info('[Onboarding] Starting Qwen OAuth flow...')
+
+      // Check if Qwen CLI is installed
+      const isInstalled = await isQwenCliInstalled()
+      if (!isInstalled) {
+        mainLog.error('[Onboarding] Qwen CLI not installed')
+        return {
+          success: false,
+          error: 'Qwen CLI not found. Please install it with: npm install -g @qwen-code/qwen-code',
+        }
+      }
+
+      mainLog.info('[Onboarding] Qwen CLI found, starting OAuth...')
+
+      // Start OAuth flow
+      await startQwenOAuth((status) => {
+        mainLog.info('[Onboarding] Qwen OAuth status:', status)
+      })
+
+      mainLog.info('[Onboarding] Qwen OAuth process completed, reading tokens...')
+
+      // Read tokens from Qwen config
+      const tokens = await getQwenOAuthTokens()
+      if (!tokens) {
+        mainLog.error('[Onboarding] No tokens found in Qwen config')
+        return {
+          success: false,
+          error: 'Authentication completed but no tokens found. Please try again.',
+        }
+      }
+
+      mainLog.info('[Onboarding] Qwen OAuth completed successfully')
+      return {
+        success: true,
+        accessToken: tokens.accessToken,
+        refreshToken: tokens.refreshToken,
+        expiresAt: tokens.expiresAt,
+        tokenType: tokens.tokenType || 'Bearer',
+      }
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unknown error'
+      mainLog.error('[Onboarding] Start Qwen OAuth error:', message, error)
+      return { success: false, error: message }
+    }
+  })
+
+  // Exchange Qwen OAuth tokens for connection
+  ipcMain.handle(IPC_CHANNELS.ONBOARDING_EXCHANGE_QWEN_OAUTH, async (_event, connectionSlug: string, tokens: {
+    accessToken: string
+    refreshToken?: string
+    expiresAt?: number
+    tokenType?: string
+  }) => {
+    try {
+      mainLog.info(`[Onboarding] Saving Qwen OAuth tokens for connection: ${connectionSlug}`)
+
+      const manager = getCredentialManager()
+      await manager.setLlmOAuth(connectionSlug, {
+        accessToken: tokens.accessToken,
+        refreshToken: tokens.refreshToken,
+        expiresAt: tokens.expiresAt,
+        idToken: tokens.accessToken, // Qwen uses access token as ID token
+      })
+
+      mainLog.info('[Onboarding] Qwen OAuth tokens saved successfully')
+      return { success: true }
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unknown error'
+      mainLog.error('[Onboarding] Save Qwen OAuth tokens error:', message)
+      return { success: false, error: message }
+    }
   })
 }

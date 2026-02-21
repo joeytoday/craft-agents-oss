@@ -678,6 +678,9 @@ export const IPC_CHANNELS = {
   ONBOARDING_EXCHANGE_CLAUDE_CODE: 'onboarding:exchangeClaudeCode',
   ONBOARDING_HAS_CLAUDE_OAUTH_STATE: 'onboarding:hasClaudeOAuthState',
   ONBOARDING_CLEAR_CLAUDE_OAUTH_STATE: 'onboarding:clearClaudeOAuthState',
+  // Qwen OAuth (CLI-based flow)
+  ONBOARDING_START_QWEN_OAUTH: 'onboarding:startQwenOAuth',
+  ONBOARDING_EXCHANGE_QWEN_OAUTH: 'onboarding:exchangeQwenOAuth',
 
   // LLM Connections (provider configurations)
   LLM_CONNECTION_LIST: 'LLM_Connection:list',
@@ -985,6 +988,10 @@ export interface ElectronAPI {
   exchangeClaudeCode(code: string, connectionSlug: string): Promise<ClaudeOAuthResult>
   hasClaudeOAuthState(): Promise<boolean>
   clearClaudeOAuthState(): Promise<{ success: boolean }>
+
+  // Qwen OAuth (CLI-based flow)
+  startQwenOAuth(): Promise<{ success: boolean; accessToken?: string; refreshToken?: string; expiresAt?: number; tokenType?: string; error?: string }>
+  exchangeQwenCode(connectionSlug: string, tokens: { accessToken: string; refreshToken?: string; expiresAt?: number; tokenType?: string }): Promise<{ success: boolean; error?: string }>
 
   // ChatGPT OAuth (for Codex chatgptAuthTokens mode)
   // Note: startChatGptOAuth opens browser and completes full OAuth flow internally
